@@ -1,0 +1,29 @@
+{
+  "name": "bookify-backend",
+  "version": "1.0.0",
+  "description": "bookify-backend",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon src/app.js",
+    "start": "node src/app.js"
+  },
+  "keywords": [
+    "node.js",
+    "express.js",
+    "mongodb"
+  ],
+  "author": "Shubham Pal",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.10.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.8.1",
+    "multer": "^2.2.0",
+    "nodemon": "^3.1.14",
+    "validator": "^13.15.35"
+  }
+}
