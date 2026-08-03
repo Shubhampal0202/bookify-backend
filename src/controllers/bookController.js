@@ -8,9 +8,7 @@ const cloudinary = require("../config/cloudinary");
 async function createBook(req, res) {
   try {
     const { title, description, author, price, category } = req.body;
-    console.log(title, description, author, price, category);
     const file = req.file;
-    console.log(file);
     if (!file) {
       return res.status(400).json({
         success: false,
@@ -30,8 +28,8 @@ async function createBook(req, res) {
 
     try {
       result = await uploadImage(file.buffer);
-      console.log("result", result);
     } catch (err) {
+      console.error(err)
       return res.status(500).json({
         success: false,
         message: "File upload failed. Please try again",
@@ -45,7 +43,7 @@ async function createBook(req, res) {
       .status(201)
       .json({ success: true, message: "Book created successfully" });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     if (err.name === "ValidationError") {
       const messages = Object.values(err.errors).map((val) => val.message);
       return res.status(400).json({ success: false, message: messages[0] });
@@ -58,12 +56,11 @@ async function createBook(req, res) {
 
 async function getAllBooks(req, res) {
   try {
-    let { currentPage, limit, search, category } = req.query;
-    console.log(currentPage, limit, search);
+    let { currentPage, limit, search, category } = req.query; 
     currentPage = Number(currentPage) || 1;
     currentPage = currentPage < 1 ? 1 : currentPage;
-    limit = Number(limit) || 2;
-    limit = Math.min(limit, 2);
+    limit = Number(limit) || 3;
+    limit = Math.min(limit, 3);
     limit = limit < 1 ? 1 : limit;
 
     let filter = {};
@@ -81,9 +78,7 @@ async function getAllBooks(req, res) {
         $options: "i",
       };
     }
-    console.log(filter);
     const skip = (currentPage - 1) * limit;
-    console.log(currentPage, limit, skip);
     const totalBooks = await Book.countDocuments(filter);
     const totalPages = Math.ceil(totalBooks / limit);
     const books = await Book.find(filter)
@@ -103,7 +98,7 @@ async function getAllBooks(req, res) {
       limit,
     });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res
       .status(500)
       .json({ success: false, message: "Internal Server Error" });
@@ -114,8 +109,6 @@ async function updateBook(req, res) {
   try {
     const { title, description, author, category, price } = req.body;
     const file = req.file;
-    console.log(file);
-    console.log(req.params.id);
     const bookId = req.params.id;
     if (!mongoose.Types.ObjectId.isValid(bookId)) {
       return res.status(400).json({
@@ -175,7 +168,7 @@ async function updateBook(req, res) {
       if (book.bookCoverUrlId) {
         await cloudinary.uploader
           .destroy(book.bookCoverUrlId)
-          .catch((err) => console.log("Error in deleting image", err.message));
+          .catch((err) => console.error("Error in deleting image", err.message));
       }
 
       book.bookCoverUrl = result.secure_url;
@@ -196,7 +189,7 @@ async function updateBook(req, res) {
       },
     });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     if (err.name === "ValidationError") {
       const messages = Object.values(err.errors).map((val) => val.message);
       return res.status(400).json({ success: false, message: messages[0] });
@@ -225,18 +218,79 @@ async function deleteBook(req, res) {
     if (book.bookCoverUrl && book.bookCoverUrlId) {
       await cloudinary.uploader
         .destroy(book.bookCoverUrlId)
-        .catch((err) => console.log("Error in deleting image", err.message));
+        .catch((err) => console.error("Error in deleting image", err.message));
     }
     await book.deleteOne();
     return res
       .status(200)
       .json({ success: true, message: "Book deleted successfully" });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res
       .status(500)
       .json({ success: false, message: "Internal Server Error" });
   }
 }
 
-module.exports = { createBook, getAllBooks, updateBook, deleteBook };
+async function getBookDetails(req, res) {
+  try {
+    const bookId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(bookId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid book id",
+      });
+    }
+    const book = await Book.findById(bookId).lean();
+    if (!book) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Book not found" });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Get book details",
+      book: {
+        title: book.title,
+        description: book.description,
+        author: book.author,
+        category: book.category,
+        bookCoverUrl: book.bookCoverUrl,
+        price: book.price,
+        createdAt: book.createdAt,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+}
+async function latestBooks(req, res) {
+  try {
+    const books = await Book.find({})
+      .select(
+        "_id title description author category bookCoverUrl createdAt price",
+      )
+      .sort({ createdAt: -1 })
+      .limit(4);
+    return res
+      .status(200)
+      .json({ success: true, message: "Latest books", books });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+}
+
+module.exports = {
+  createBook,
+  getAllBooks,
+  updateBook,
+  deleteBook,
+  getBookDetails,
+  latestBooks,
+};

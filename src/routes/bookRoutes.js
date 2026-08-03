@@ -5,6 +5,8 @@ const {
   getAllBooks,
   updateBook,
   deleteBook,
+  getBookDetails,
+  latestBooks,
 } = require("../controllers/bookController");
 const { verifyUser } = require("../middleware/auth");
 const { authorizeUser } = require("../middleware/authorizeUser");
@@ -18,7 +20,8 @@ router.post(
   createBook,
 );
 
-router.get("/admin/book",getAllBooks)
+router.get("/book", getAllBooks)
+
 router.patch(
   "/admin/book/:id",
   verifyUser,
@@ -32,5 +35,7 @@ router.delete(
   authorizeUser,
   deleteBook,
 );
+router.get("/book/:id", getBookDetails)
+router.get("/latest-books", latestBooks)
 
 module.exports = router;

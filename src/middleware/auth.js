@@ -19,10 +19,8 @@ async function verifyUser(req, res, next) {
         .json({ success: false, message: "Authentication failed" });
     }
     req.user = user;
-    console.log(user)
     return next();
   } catch (err) {
-    console.log("err", err);
     if (err.name === "TokenExpiredError") {
       return res.status(401).json({
         success: false,

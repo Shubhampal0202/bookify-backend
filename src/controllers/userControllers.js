@@ -2,9 +2,7 @@ const { User } = require("../models/userSchema");
 const bcrypt = require("bcrypt");
 const { generateToken } = require("../utils/generateToken");
 
-
 async function createUser(req, res) {
-  console.log(req.body);
   try {
     const { username, email, password } = req.body;
     if (!email || !username || !password) {
@@ -32,7 +30,7 @@ async function createUser(req, res) {
       .status(201)
       .json({ success: true, message: "User created successfully" });
   } catch (err) {
-    console.log("Error", err.message);
+    console.error("Error", err.message);
     if (err.name === "ValidationError") {
       const messages = Object.values(err.errors).map((val) => val.message);
       return res.status(400).json({ success: false, message: messages[0] });
@@ -86,8 +84,8 @@ async function signin(req, res) {
         success: true,
         message: "LoggedIn successfully",
         user: {
+          _id: userExist._id,
           username: userExist.username,
-          email: userExist.email,
           role: userExist.role,
           profileUrl: userExist.profileUrl,
         },
@@ -121,17 +119,15 @@ async function logout(req, res) {
   }
 }
 
-async function getProfile(req, res) {
-  console.log("profie called");
-
+async function getAuth(req, res) {
   try {
     const user = req.user;
     return res.status(200).json({
       success: true,
-      message: "Profile data",
+      message: "Auth data",
       user: {
+        _id: user._id,
         username: user.username,
-        email: user.email,
         profileUrl: user.profileUrl,
         role: user.role,
       },
@@ -143,5 +139,29 @@ async function getProfile(req, res) {
       .json({ success: false, message: "Internal Server Error" });
   }
 }
+async function getProfile(req, res) {
+  try {
+    const user = req.user;
+    return res.status(200).json({
+      success: true,
+      message: "Profile data",
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profileUrl: user.profileUrl,
+        role: user.role,
+        createdAt: user.createdAt,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal Server Error" });
+  }
+}
 
-module.exports = { createUser, signin, logout, getProfile };
+
+
+module.exports = { createUser, signin, logout, getAuth, getProfile };

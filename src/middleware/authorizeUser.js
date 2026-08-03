@@ -4,7 +4,7 @@ function authorizeUser(req, res, next) {
       .status(403)
       .json({ success: false, message: "Access denied. Admin only." });
   }
-  console.log(">>>>>>>>>>")
+ 
   return next();
 }
 
