@@ -10,7 +10,10 @@ const userRouter = require("./routes/userRoutes.js");
 const bookRouter = require("./routes/bookRoutes.js");
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://bookify-frontend-omega.vercel.app",
+    ],
     credentials: true,
   }),
 );

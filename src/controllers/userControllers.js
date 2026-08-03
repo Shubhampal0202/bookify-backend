@@ -76,7 +76,7 @@ async function signin(req, res) {
       .cookie("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         maxAge: 24 * 60 * 60 * 1000,
       })
       .status(200)
@@ -161,7 +161,5 @@ async function getProfile(req, res) {
       .json({ success: false, message: "Internal Server Error" });
   }
 }
-
-
 
 module.exports = { createUser, signin, logout, getAuth, getProfile };
